@@ -65,17 +65,24 @@ RCT_EXPORT_MODULE()
   return view;
 }
 
-- (void)presentModalHostView:(RCTModalHostView *)modalHostView withViewController:(RCTModalHostViewController *)viewController animated:(BOOL)animated
+- (void)presentModalHostView:(RCTModalHostView *)modalHostView withViewController:(RCTModalHostViewController *)viewController animated:(BOOL)animated completion:(void (^)(void))completionHandler
 {
   dispatch_block_t completionBlock = ^{
     if (modalHostView.onShow) {
       modalHostView.onShow(nil);
     }
+    if (completionHandler) {
+      completionHandler();
+    }
   };
   if (_presentationBlock) {
     _presentationBlock([modalHostView reactViewController], viewController, animated, completionBlock);
   } else {
-    [[modalHostView reactViewController] presentViewController:viewController animated:animated completion:completionBlock];
+    UIViewController *topViewController = [modalHostView reactViewController];
+    if ([topViewController isKindOfClass:RCTModalHostViewController.class]) {
+      topViewController = viewController.presentingViewController;
+    }
+    [topViewController presentViewController:viewController animated:animated completion:completionBlock];
   }
 }
 
