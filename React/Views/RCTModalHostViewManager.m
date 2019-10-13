@@ -79,13 +79,18 @@ RCT_EXPORT_MODULE()
     _presentationBlock([modalHostView reactViewController], viewController, animated, completionBlock);
   } else {
     UIViewController *topViewController = [modalHostView reactViewController];
-    if (topViewController.presentedViewController) {
-      [topViewController dismissViewControllerAnimated:animated completion:^{
-        [topViewController presentViewController:viewController animated:animated completion:completionBlock];
-      }];
-    } else {
-      [[modalHostView reactViewController] presentViewController:viewController animated:animated completion:completionBlock];
+    while (topViewController.presentedViewController != nil) {
+      if ([topViewController.presentedViewController isKindOfClass:UIAlertController.class]) {
+        // Don't present on top of UIAlertController, this will mess it up:
+        // https://stackoverflow.com/questions/27028983/uialertcontroller-is-moved-to-buggy-position-at-top-of-screen-when-it-calls-pre
+        [topViewController dismissViewControllerAnimated:animated completion:^{
+          [topViewController presentViewController:viewController animated:animated completion:completionBlock];
+        }];
+        return;
+      }
+      topViewController = topViewController.presentedViewController;
     }
+    [topViewController presentViewController:viewController animated:animated completion:completionBlock];
   }
 }
 
