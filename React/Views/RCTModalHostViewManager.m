@@ -79,17 +79,26 @@ RCT_EXPORT_MODULE()
   }
 }
 
-- (void)dismissModalHostView:(RCTModalHostView *)modalHostView withViewController:(RCTModalHostViewController *)viewController animated:(BOOL)animated
+- (void)dismissModalHostView:(RCTModalHostView *)modalHostView withViewController:(RCTModalHostViewController *)viewController animated:(BOOL)animated completion:(void (^)(void))completionHandler
 {
   dispatch_block_t completionBlock = ^{
     if (modalHostView.identifier) {
       [[self.bridge moduleForClass:[RCTModalManager class]] modalDismissed:modalHostView.identifier];
     }
+    if (completionHandler) {
+      completionHandler();
+    }
   };
   if (_dismissalBlock) {
     _dismissalBlock([modalHostView reactViewController], viewController, animated, completionBlock);
   } else {
-    [viewController.presentingViewController dismissViewControllerAnimated:animated completion:completionBlock];
+    if (viewController.presentedViewController && viewController.presentingViewController) {
+      // Ask the presenting view controller to dismiss any view controllers presented on top of the modal host
+      // together with the host itself.
+      [viewController.presentingViewController dismissViewControllerAnimated:animated completion:completionBlock];
+    } else {
+      [viewController dismissViewControllerAnimated:animated completion:completionBlock];
+    }
   }
 }
 
