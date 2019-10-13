@@ -65,14 +65,11 @@ RCT_EXPORT_MODULE()
   return view;
 }
 
-- (void)presentModalHostView:(RCTModalHostView *)modalHostView withViewController:(RCTModalHostViewController *)viewController animated:(BOOL)animated completion:(void (^)(void))completionHandler
+- (void)presentModalHostView:(RCTModalHostView *)modalHostView withViewController:(RCTModalHostViewController *)viewController animated:(BOOL)animated
 {
   dispatch_block_t completionBlock = ^{
     if (modalHostView.onShow) {
       modalHostView.onShow(nil);
-    }
-    if (completionHandler) {
-      completionHandler();
     }
   };
   if (_presentationBlock) {
@@ -94,14 +91,11 @@ RCT_EXPORT_MODULE()
   }
 }
 
-- (void)dismissModalHostView:(RCTModalHostView *)modalHostView withViewController:(RCTModalHostViewController *)viewController animated:(BOOL)animated completion:(void (^)(void))completionHandler
+- (void)dismissModalHostView:(RCTModalHostView *)modalHostView withViewController:(RCTModalHostViewController *)viewController animated:(BOOL)animated
 {
   dispatch_block_t completionBlock = ^{
     if (modalHostView.identifier) {
       [[self.bridge moduleForClass:[RCTModalManager class]] modalDismissed:modalHostView.identifier];
-    }
-    if (completionHandler) {
-      completionHandler();
     }
   };
   if (_dismissalBlock) {

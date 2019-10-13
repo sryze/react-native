@@ -86,7 +86,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:coder)
 
 - (void)notifyForBoundsChange:(CGRect)newBounds
 {
-  if (_reactSubview && [self isPresented]) {
+  if (_reactSubview && _isPresented) {
     [_bridge.uiManager setSize:newBounds.size forView:_reactSubview];
     [self notifyForOrientationChange];
   }
@@ -158,15 +158,10 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:coder)
 
 - (void)dismissModalViewController
 {
-  if ([self isPresented]) {
+  if (_isPresented) {
     [_delegate dismissModalHostView:self
                  withViewController:_modalViewController
-                           animated:[self hasAnimationType]
-                         completion:^{
-//                           self->_isPresented = NO;
-//                           self->_isPresented = self->_modalViewController.beingPresented || self->_modalViewController.presentingViewController != nil;
-                         }];
-//    _isPresented = self->_modalViewController.beingPresented || self->_modalViewController.presentingViewController != nil;
+                           animated:[self hasAnimationType]];
     _isPresented = NO;
   }
 }
@@ -181,11 +176,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:coder)
     return;
   }
   
-//  if ([self isPresented] && !self.window) {
-//    [self dismissModalViewController];
-//  }
-  
-  if (![self isPresented] && self.window) {
+  if (!_isPresented && self.window) {
     RCTAssert(self.reactViewController, @"Can't present modal view controller without a presenting view controller");
 
 #if !TARGET_OS_TV
@@ -199,11 +190,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:coder)
     if (self.presentationStyle != UIModalPresentationNone) {
       _modalViewController.modalPresentationStyle = self.presentationStyle;
     }
-    [_delegate presentModalHostView:self withViewController:_modalViewController animated:[self hasAnimationType] completion:^{
-//      self->_isPresented = YES;
-//      self->_isPresented = self->_modalViewController.beingPresented || self->_modalViewController.presentingViewController != nil;
-    }];
-//    _isPresented = self->_modalViewController.beingPresented || self->_modalViewController.presentingViewController != nil;
+    [_delegate presentModalHostView:self withViewController:_modalViewController animated:[self hasAnimationType]];
     _isPresented = YES;
   }
 }
@@ -212,7 +199,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:coder)
 {
   [super didMoveToSuperview];
 
-  if ([self isPresented] && !self.superview) {
+  if (_isPresented && !self.superview) {
     [self dismissModalViewController];
   }
 }
@@ -222,11 +209,6 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:coder)
   dispatch_async(dispatch_get_main_queue(), ^{
     [self dismissModalViewController];
   });
-}
-
-- (BOOL)isPresented {
-  // return _modalViewController.beingPresented || _modalViewController.presentingViewController != nil;
-  return _isPresented;
 }
 
 - (BOOL)isTransparent
