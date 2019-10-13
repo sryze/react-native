@@ -79,10 +79,13 @@ RCT_EXPORT_MODULE()
     _presentationBlock([modalHostView reactViewController], viewController, animated, completionBlock);
   } else {
     UIViewController *topViewController = [modalHostView reactViewController];
-    if ([topViewController isKindOfClass:RCTModalHostViewController.class]) {
-      topViewController = viewController.presentingViewController;
+    if (topViewController.presentedViewController) {
+      [topViewController dismissViewControllerAnimated:animated completion:^{
+        [topViewController presentViewController:viewController animated:animated completion:completionBlock];
+      }];
+    } else {
+      [[modalHostView reactViewController] presentViewController:viewController animated:animated completion:completionBlock];
     }
-    [topViewController presentViewController:viewController animated:animated completion:completionBlock];
   }
 }
 
